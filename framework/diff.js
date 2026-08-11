@@ -28,3 +28,51 @@ export function diffAttributes(oldProps = {}, newProps = {}) {
   })
   return changes
 }
+
+// core function to calculate diffs between old and new vnodes
+export function calculateDiff(oldNode, newNode, pathKey = '') {
+  const diffMap = new Map()
+  const isOldEmpty = oldNode === null || oldNode === undefined
+  const isNewEmpty = newNode === null || newNode === undefined
+
+  if (isOldEmpty && isNewEmpty) return diffMap
+
+  // node added
+  if (isOldEmpty && !isNewEmpty) {
+    diffMap.set(pathKey, [{ type: DIFF_OPERATIONS.ADD, vnode: newNode }])
+    return diffMap
+  }
+
+  // removed
+  if (!isOldEmpty && isNewEmpty) {
+    diffMap.set(pathKey, [{ type: DIFF_OPERATIONS.REMOVE, vnode: oldNode }])
+    return diffMap
+  }
+
+  const isOldPrimitive = typeof oldNode === 'string' || typeof oldNode === 'number'
+  const isNewPrimitive = typeof newNode === 'string' || typeof newNode === 'number'
+
+  // both are plain text wella numbers compare string
+  if (isOldPrimitive && isNewPrimitive) {
+    if (String(oldNode) !== String(newNode)) {
+      diffMap.set(pathKey, [{ type: DIFF_OPERATIONS.UPDATE_TEXT, text: String(newNode) }])
+    }
+    return diffMap
+  }
+  // string vs vnode replace entirely
+  if (isOldPrimitive !== isNewPrimitive) {
+    diffMap.set(pathKey, [{ type: DIFF_OPERATIONS.REPLACE, vnode: newNode }])
+    return diffMap
+  }
+  // tag wella key tbdlou replace the whole node
+  if (oldNode.props?.key !== newNode.props?.key || oldNode.tag !== newNode.tag) {
+    diffMap.set(pathKey, [{ type: DIFF_OPERATIONS.REPLACE, vnode: newNode }])
+    return diffMap
+  }
+
+  const attrPatches = diffAttributes(oldNode.props || {}, newNode.props || {})
+  if (attrPatches.length > 0) {
+    diffMap.set(pathKey, attrPatches)
+  }
+  return diffMap
+}
