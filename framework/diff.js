@@ -74,5 +74,21 @@ export function calculateDiff(oldNode, newNode, pathKey = '') {
   if (attrPatches.length > 0) {
     diffMap.set(pathKey, attrPatches)
   }
+
+  const oldChildren = oldNode.children || []
+  const newChildren = newNode.children || []
+  const totalLength = Math.max(oldChildren.length, newChildren.length)
+
+  // loop through children and recurse to collect diffs
+  for (let i = 0; i < totalLength; i++) {
+    const childPath = pathKey === '' ? `${i}` : `${pathKey},${i}`
+    const childDiffs = calculateDiff(oldChildren[i], newChildren[i], childPath)
+
+    childDiffs.forEach((changes, key) => {
+      const existing = diffMap.get(key) || []
+      diffMap.set(key, [...existing, ...changes])
+    })
+  }
+
   return diffMap
 }
