@@ -16,13 +16,9 @@ export function setRenderCallback(callback) {
 }
 
 
-
 // before it calls the root component again.
-
 export function resetStateIndex() { stateIndex = 0; }
   
-
-
 function scheduleRender() {
   
   // duplicate scheduling prev
@@ -61,8 +57,6 @@ export function useState(initialValue) {
       
       typeof nextValue === 'function' ? nextValue(slot.value) : nextValue; 
       
-      
-      
       // unnecessary render
       if (Object.is(slot.value, resolvedValue)) return;
 
@@ -80,5 +74,40 @@ export function useState(initialValue) {
 
 
   return [slot.value, slot.setValue];
+
+}
+
+
+export function useEffect(callback, dependencies) {
+  
+  const currentIdx = effectIdx;
+
+  const previousDeps = effectDepsStore[currentIdx];
+
+  let needsExecution = false;
+
+  (dependencies === undefined || previousDeps === undefined || dependencies.length !== previousDeps.length) ? 
+
+  needsExecution = true : needsExecution = dependencies.some((dep, i) => !Object.is(dep, previousDeps[i])); 
+  
+  // cleanup useffect (we add a cleanup func to the effect "example remove  old listners")
+
+  if (needsExecution) {
+
+    effectQueue.push(() => {
+      
+      (typeof effectCleanupStore[currentIdx] === 'function') ? effectCleanupStore[currentIdx]() : null ; 
+
+      const cleanup = callback();
+
+      effectCleanupStore[currentIdx] = cleanup;
+
+    });
+
+  }
+
+  effectDepsStore[currentIdx] = dependencies;
+
+  effectIdx++;
 
 }
