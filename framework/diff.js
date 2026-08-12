@@ -4,6 +4,7 @@ export const DIFF_OPERATIONS = {
   REMOVE: 'REMOVE',
   REPLACE: 'REPLACE',
   UPDATE_ATTRIBUTES: 'UPDATE_ATTRIBUTES',
+  REMOVE_ATTRIBUTE: 'REMOVE_ATTRIBUTE',
   UPDATE_TEXT: 'UPDATE_TEXT'
 }
 
@@ -14,9 +15,16 @@ export function diffAttributes(oldProps = {}, newProps = {}) {
   const keys = new Set([...Object.keys(oldProps), ...Object.keys(newProps)])
 
   keys.forEach(attrName => {
+    if (attrName === 'key' || attrName === 'children') return
     const prevVal = oldProps[attrName]
     const nextVal = newProps[attrName]
-
+if (!(attrName in newProps)) {
+  changes.push({
+    type:  DIFF_OPERATIONS.REMOVE_ATTRIBUTE,
+    key: attrName
+  })
+  return 
+}
     // hna we need to always push updates for value and checked to keep controlled form elements in sync
     if (prevVal !== nextVal || attrName === 'value' || attrName === 'checked') {
       changes.push({
