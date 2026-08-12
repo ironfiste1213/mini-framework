@@ -111,3 +111,27 @@ export function useEffect(callback, dependencies) {
   effectIdx++;
 
 }
+
+
+export function useRef(initialValue) {
+
+  const currentIdx = refIdx;
+
+
+(refStore[currentIdx] === undefined) ? refStore[currentIdx] = { current: initialValue } : null ; 
+
+    refIdx++;
+
+  return refStore[currentIdx];
+
+}
+
+export function executeEffects() {
+
+  const queueToRun = [...effectQueue];
+
+  effectQueue.length = 0;
+
+  queueToRun.forEach(fn => fn());
+  
+}
