@@ -10,8 +10,8 @@ export function assignAttribute(element, propName, value) {
     element[eventType] = typeof value === 'function' ? value : null
     return
   }
-  if (value === undefined) {
-    element.removeAttribute(propName)
+  if (value === undefined || value === null) {
+    removeAttribute(element, propName)
     return
   }
   if (propName === 'className') {
@@ -28,7 +28,17 @@ export function assignAttribute(element, propName, value) {
   }
   element.setAttribute(propName, value)
 }
-
+export function removeAttribute(element, propName) {
+  if (propName.startsWith('on')) {
+    element[propName.toLowerCase()] = null
+  } else if (propName === 'className') {
+    element.removeAttribute('class')
+  } else if (propName === 'value' || propName === 'checked') {
+    element[propName] = propName === 'checked' ? false : ''
+  } else {
+    element.removeAttribute(propName)
+  }
+}
 // converts vnodes into actual real dom nodes recursively
 export function buildRealDOM(vnode) {
   // text or number primitive nodes
@@ -134,6 +144,13 @@ function applySingleOperation(container, pathKey, op) {
       const targetNode = pathKey === '' ? container.firstChild : locateNodeByPath(container, pathKey)
       if (targetNode) {
         assignAttribute(targetNode, op.key, op.value)
+      }
+      break
+    }
+    case DIFF_OPERATIONS.REMOVE_ATTRIBUTE: {
+      const targetNode = pathKey === '' ? container.firstChild : locateNodeByPath(container, pathKey)
+      if (targetNode) {
+        removeAttribute(targetNode, op.key)
       }
       break
     }
