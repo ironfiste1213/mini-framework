@@ -2,8 +2,10 @@ const stateSlots = [];
 const effectDepsStore = [];
 const effectCleanupStore = [];
 const effectQueue = [];
+const refStore = [];
 let effectIdx = 0;
 let stateIndex = 0;
+let refIdx = 0;
 let requestRender = null;
 let renderScheduled = false;
 
@@ -18,7 +20,9 @@ export function setRenderCallback(callback) {
 export function resetHookIndices() {
   stateIndex = 0;
   effectIdx = 0;
+  refIdx = 0;
 }
+export const resetHookIndex = resetHookIndices;
 // before it calls the root component again.
 export function resetStateIndex() { stateIndex = 0; }
   
@@ -100,9 +104,21 @@ if (dependencies === undefined || previousDeps === undefined || dependencies.len
   effectIdx++;
 
 }
+export function useRef(initialValue) {
+  const currentIdx = refIdx++
+
+  if (refStore[currentIdx] === undefined) {
+    refStore[currentIdx] = { current: initialValue }
+  }
+
+  return refStore[currentIdx]
+}
+
 export function flushEffects() {
   while (effectQueue.length > 0) {
     const effect = effectQueue.shift()
     effect()
   }
 }
+export const executeEffects = flushEffects
+

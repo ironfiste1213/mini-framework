@@ -2,7 +2,7 @@ let prevVNode = null;
 let rootElement = null;
 let rootComponent = null;
 
-import { resetHookIndex, executeEffects } from './hooks.js';
+import { resetHookIndex, executeEffects, setRenderCallback } from './hooks.js';
 import { calculateDiff } from './diff.js';
 import { applyDOMPatches } from './events.js';
 
@@ -22,6 +22,7 @@ export function mount(component, container) {
   
   if (!rootElement) return;
 
+  setRenderCallback(renderApp);
   renderApp();
 
 }
