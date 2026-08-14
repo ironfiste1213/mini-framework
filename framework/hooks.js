@@ -1,5 +1,8 @@
 const stateSlots = [];
-
+const effectDepsStore = [];
+const effectCleanupStore = [];
+const effectQueue = [];
+let effectIdx = 0;
 let stateIndex = 0;
 let requestRender = null;
 let renderScheduled = false;
@@ -15,7 +18,10 @@ export function setRenderCallback(callback) {
 
 }
 
-
+export function resetHookIndices() {
+  stateIndex = 0;
+  effectIdx = 0;
+}
 // before it calls the root component again.
 export function resetStateIndex() { stateIndex = 0; }
   
